@@ -50,3 +50,17 @@ exports.getAvailableSeats = async (req, res) => {
     res.status(500).json({ message: error.message })
   }
 }
+
+exports.getAllSchedules = async (req, res) => {
+  try {
+    const schedules = await Schedule.find()
+      .populate("train")
+      .sort({ date: 1, departureTime: 1 })
+    res.json({
+      count: schedules.length,
+      schedules
+    })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}

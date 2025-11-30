@@ -7,5 +7,6 @@ router.post("/register", authController.register)
 router.post("/login", authController.login)
 router.get("/me", auth, authController.getMe)
 router.get("/logout", authController.logout)
+router.get("/admin/users", auth, require("../middleware/auth").adminAuth, authController.getAllUsers)
 
 module.exports = router
