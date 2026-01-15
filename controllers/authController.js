@@ -1,8 +1,8 @@
 const User = require("../models/User")
 const jwt = require("jsonwebtoken")
 
-const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET || "your_jwt_secret", {
+const generateToken = (userId, role) => {
+  return jwt.sign({ id: userId, role: role || "user" }, process.env.JWT_SECRET || "your_jwt_secret", {
     expiresIn: "7d",
   })
 }
@@ -31,7 +31,7 @@ exports.register = async (req, res) => {
 
     await user.save()
 
-    const token = generateToken(user._id)
+    const token = generateToken(user._id, user.role)
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -71,7 +71,7 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" })
     }
 
-    const token = generateToken(user._id)
+    const token = generateToken(user._id, user.role)
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -115,6 +115,38 @@ exports.getAllUsers = async (req, res) => {
       users
     })
   } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+exports.deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params
+    
+    // Check if user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Authentication required" })
+    }
+    
+    // Prevent admin from deleting themselves
+    if (req.user.id === id) {
+      return res.status(400).json({ message: "You cannot delete your own account" })
+    }
+
+    const user = await User.findById(id)
+    if (!user) {
+      return res.status(404).json({ message: "User not found" })
+    }
+
+    // Prevent deleting other admin users (optional - you can remove this if you want)
+    if (user.role === "admin" && req.user.id !== id) {
+      return res.status(403).json({ message: "Cannot delete admin users" })
+    }
+
+    await User.findByIdAndDelete(id)
+    res.json({ message: "User deleted successfully" })
+  } catch (error) {
+    console.error("Delete user error:", error)
     res.status(500).json({ message: error.message })
   }
 }
