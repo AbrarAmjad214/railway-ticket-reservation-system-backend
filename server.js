@@ -9,6 +9,8 @@ const scheduleRoutes = require("./routes/scheduleRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const cityRoutes = require("./routes/cityRoutes");
+const couponRoutes = require("./routes/couponRoutes");
+
 const dns = require("node:dns")
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 dotenv.config();
@@ -34,7 +36,7 @@ app.use("/api/schedule", scheduleRoutes);
 app.use("/api/booking", bookingRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/cities", cityRoutes);
-
+app.use("/api/coupons", couponRoutes);
 // Health check
 app.get("/", (req, res) => {
   res.json({ message: "Server is running" });
