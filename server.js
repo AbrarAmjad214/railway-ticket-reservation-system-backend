@@ -9,7 +9,8 @@ const scheduleRoutes = require("./routes/scheduleRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const cityRoutes = require("./routes/cityRoutes");
-
+const dns = require("node:dns")
+dns.setServers(['8.8.8.8', '1.1.1.1']);
 dotenv.config();
 
 connectDB();
@@ -19,8 +20,8 @@ const app = express();
 // Middleware
 app.use(
   cors({
-    // origin: "http://localhost:5173",
-    origin: "https://railway-ticket-reservation-system-opal.vercel.app",
+    origin: "http://localhost:5173",
+    // origin: "https://railway-ticket-reservation-system-opal.vercel.app",
     credentials: true,
   })
 );

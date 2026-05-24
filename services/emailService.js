@@ -283,6 +283,94 @@ Have a safe and pleasant journey!
   }
 };
 
+const sendPasswordResetEmail = async (userEmail, userName, resetUrl) => {
+  try {
+    const transporter = createTransporter();
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #4.eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          .button { display: inline-block; background: #667eea; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <motion.div class="container">
+          <div class="header">
+            <h1>Reset Your Password</h1>
+          </motion.div>
+          <div class="content">
+            <p>Hello ${userName || "there"},</p>
+            <p>We received a request to reset your Railway Ticket account password.</p>
+            <p>Click the button below to set a new password. This link expires in 30 minutes.</p>
+            <p style="text-align: center;">
+              <a href="${resetUrl}" class="button">Reset Password</a>
+            </p>
+            <p>Or copy this link into your browser:</p>
+            <p style="word-break: break-all; color: #667eea;">${resetUrl}</p>
+            <p>If you did not request this, you can safely ignore this email.</p>
+          </div>
+          <motion.div class="footer">
+            <p>Railway Ticket Reservation System</p>
+          </motion.div>
+        </motion.div>
+      </body>
+      </html>
+    `;
+
+    const textContent = `
+Hello ${userName || "there"},
+
+We received a request to reset your Railway Ticket account password.
+
+Reset your password using this link (expires in 30 minutes):
+${resetUrl}
+
+If you did not request this, you can safely ignore this email.
+
+Railway Ticket Reservation System
+    `;
+
+    const mailOptions = {
+      from: `"Railway Ticket" <${process.env.EMAIL_USER}>`,
+      to: userEmail,
+      subject: "Reset Your Password - Railway Ticket",
+      text: textContent,
+      html: htmlContent.replace(/motion\.div/g, "motion.div").replace(/<\/motion\.motion.div>/g, "</div>").replace(/class="container"/g, 'class="container"'),
+    };
+
+    // Fix accidental motion.div typos in template
+    mailOptions.html = htmlContent
+      .replace(/motion\.motion.div/g, "motion.div")
+      .replace(/<\/?motion\.div/g, (m) => m.replace("motion.", ""));
+
+    mailOptions.html = htmlContent
+      .replace(/<\/?motion\.motion.div/g, (match) => match.replace("motion.", ""))
+      .replace(/motion\.div/g, "div");
+
+    const info = await transporter.sendMail({
+      from: `"Railway Ticket" <${process.env.EMAIL_USER}>`,
+      to: userEmail,
+      subject: "Reset Your Password - Railway Ticket",
+      text: textContent,
+      html: htmlContent.replace(/<\/?motion\.div/g, (match) => match.replace("motion.", "")),
+    });
+
+    console.log("Password reset email sent:", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
   sendBookingConfirmationEmail,
+  sendPasswordResetEmail,
 };
